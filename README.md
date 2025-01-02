@@ -1,7 +1,7 @@
 <p align="center">
     <!-- <img alt="nerfstudio" src="media/sdf_studio_4.png" width="300"> -->
     <h1 align="center">SCRStudio <br> A Unified Framework for Scene Coordinate Regression</h1>
-        <!-- <h3 align="center"><a href="https://arxiv.org/abs/2406.04340">Arxiv</a>  -->
+        <h3 align="center"><a href="https://drive.google.com/file/d/1yZw_ZeZkq6MjIZhTXfmQSPbVg8oohdKs/view?usp=sharing">Paper</a> 
     <img src="docs/module.png" center width="95%"/>
 </p>
 
