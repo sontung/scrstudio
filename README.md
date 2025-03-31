@@ -21,23 +21,18 @@ This guide will help you get started with the default R-SCoRe SCR model trained 
 
 We recommend using **conda** to manage dependencies. Make sure to install [Conda](https://docs.conda.io/miniconda.html) before proceeding.
 
-```bash
-conda create --name scrstudio -y python=3.10
-conda activate scrstudio
-pip install --upgrade pip
-```
 
 ### Install Dependencies
 
 Install PyTorch with CUDA (tested with CUDA 12.1 and 12.4). PyTorch Geometric and cuML are also required for encoding preprocessing.
 
 For **CUDA 12.4**:
-
 ```bash
-pip install torch==2.5.1 torchvision==0.20.1  --index-url https://download.pytorch.org/whl/cu124
-pip install --extra-index-url=https://pypi.nvidia.com "cuml-cu12==25.2.*"
+conda create -n scrstudio python=3.10 pytorch=2.5.1 torchvision=0.20.1 pytorch-cuda=12.4 cuml=25.02 -c pytorch  -c rapidsai -c conda-forge -c nvidia
+conda activate scrstudio
+pip install --upgrade pip
 pip install torch_geometric
-pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.0+cu124.html
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
 ```
 
 
@@ -124,7 +119,7 @@ scr-eval --load-config outputs/aachen/scrfacto/<timestamp>/config.yml --split te
 # Release Plan
 We are actively preparing SCRStudio for public release. Below is the tentative schedule:  
 
-- [ ] March 2025: Initial release of SCRStudio.
+- [x] March 2025: Initial release of SCRStudio.
 - [ ] April 2025: SCRStudio Viewer.
 
 

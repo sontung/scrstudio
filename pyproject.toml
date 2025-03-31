@@ -32,6 +32,7 @@ dependencies = [
     "kapture",
     "gdown",
     "imagesize",
+    "scikit-image",
     "poselib",
     "torch_geometric",
     "hloc@git+https://github.com/cvg/Hierarchical-Localization",
