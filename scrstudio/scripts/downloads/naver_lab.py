@@ -110,7 +110,7 @@ class NaverDownload(DatasetDownload):
                     img_undistorted=cv2.undistort(img,k,dist)
                     image_bytes=cv2.imencode('.jpg',img_undistorted)[1].tobytes()
                     txn.put(key=i.to_bytes(4,sys.byteorder), value=image_bytes,append=True)
-                    data["file_list"].append(str(image_path))
+                    data["file_list"].append(str(fn))
                     data["calibration"].append(k)
                     data["image_shapes"].append(img.shape[:2])
                     if kapture_data.trajectories is not None:

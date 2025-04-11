@@ -29,6 +29,7 @@ class CamLocDatasetConfig(InstantiateConfig):
     split: str = 'train'
     depth: Optional[ReaderConfig] = None
     rgb: ReaderConfig = field(default_factory=lambda: LMDBReaderConfig())
+    calib: str = 'calibration.npy'
     augment: Optional[ImageAugmentConfig] = None
     num_decoder_clusters: int = 1
     feat_name: str = 'features.npy'
@@ -67,7 +68,7 @@ class CamLocDataset(Dataset):
         else:
             self.depth_reader = None
 
-        self.calibration_values = np.load(root / 'calibration.npy')
+        self.calibration_values = np.load(root / self.config.calib)
 
         if not (root / 'poses.npy').exists():
             self.pose_values = np.empty((len(self.rgb_files), 4, 4))
@@ -116,6 +117,9 @@ class CamLocDataset(Dataset):
         k = self.calibration_values[idx]
         if k.size == 1:
             focal_length = torch.tensor([k, k], dtype=torch.float32)
+            center_point = None
+        elif k.shape == (2, ):
+            focal_length = torch.tensor(k, dtype=torch.float32)
             center_point = None
         elif k.shape == (3, 3):
             focal_length = torch.tensor(k[[0, 1], [0, 1]], dtype=torch.float32)

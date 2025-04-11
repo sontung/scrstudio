@@ -184,7 +184,7 @@ method_configs["scrfacto"]=TrainerConfig(
 
 depth_scrfacto=deepcopy(method_configs["scrfacto"])
 depth_scrfacto.method_name="depth-scrfacto"
-depth_scrfacto.pipeline.datamanager.train_dataset.depth=depth=LMDBReaderConfig(data='depths_lmdb',  img_type='depths')
+depth_scrfacto.pipeline.datamanager.train_dataset.depth=LMDBReaderConfig(data='depth_lmdb',  img_type='depths')
 depth_scrfacto.pipeline.model.losses[0].coord_loss=CoordLossConfig()
 depth_scrfacto.pipeline.model.losses[1].coord_loss=CoordLossConfig()
 method_configs["depth-scrfacto"]=depth_scrfacto
@@ -200,6 +200,7 @@ loftr.pipeline.datamanager.encoder=PCAEncoderConfig(
     encoder=LoFTREncoderConfig(model="loftr_indoor_new"),
     pca_path='pcaloftr_indoor_ds_new_128.pth'
 )
+loftr.pipeline.datamanager.samples_per_image=1500
 method_configs["loftr"]=loftr
 
 loftr_large=deepcopy(method_configs["loftr"])

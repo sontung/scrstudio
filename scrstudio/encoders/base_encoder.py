@@ -80,7 +80,6 @@ class Preprocess:
 
         if self.augment:
             image_transform.append(transforms.ColorJitter(brightness=self.augment.aug_black_white, contrast=self.augment.aug_black_white))
-        image_transform.append(transforms.ToTensor())
         if config.mean is not None and config.std is not None:
             image_transform.append(transforms.Normalize( mean=config.mean,std=config.std))
         self.image_transform = transforms.Compose(image_transform)
@@ -120,9 +119,10 @@ class Preprocess:
         new_wh[smaller_idx] = smaller_size
         new_wh[1 - smaller_idx] = self.round_to_multiple(int(smaller_size * old_wh[1 - smaller_idx] / old_wh[smaller_idx]))
 
-        focal_length *= new_wh / old_wh
+        wh_scale = new_wh / old_wh
+        focal_length = focal_length * wh_scale
         if center_point is not None:
-            center_point *= new_wh / old_wh
+            center_point = center_point * wh_scale
 
         new_hw= new_wh.int().tolist()[1::-1]
         image = self._resize_image(image, new_hw)
@@ -131,7 +131,7 @@ class Preprocess:
         if depth is not None:
             depth = resize(depth, new_hw, order=0,anti_aliasing=False)
 
-        image = self.image_transform(image)
+        image = TF.to_tensor(image)
 
         if self.augment:
             angle = random.uniform(-self.augment.aug_rotation, self.augment.aug_rotation)
@@ -145,6 +145,9 @@ class Preprocess:
             pose_rot = torch.eye(4)
             pose_rot[:2,:2]=torch.tensor([[math.cos(angle),-math.sin(angle)],[math.sin(angle),math.cos(angle)]])
             pose = torch.matmul(pose, pose_rot)
+        
+        original_rgb = image
+        image = self.image_transform(image)
         
         if self.config.use_half and torch.cuda.is_available():
             image = image.half()
@@ -163,6 +166,7 @@ class Preprocess:
         intrinsics_inv = intrinsics.inverse()
 
         data={
+            "rgb": original_rgb,
             "image": image,
             "mask": image_mask,
             "pose": pose,
