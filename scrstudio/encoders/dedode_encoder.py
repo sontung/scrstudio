@@ -100,7 +100,8 @@ class DedodeEncoder(Encoder):
         keypoints, scores = sample_keypoints(scoremap, num_samples=self.k)
 
         if n > 0:
-            idx = torch.randperm(keypoints.size(1), generator=generator,device=keypoints.device)[:n]
+            idx = torch.randperm(keypoints.size(1), generator=generator,device=keypoints.device)[:n] if n <= keypoints.size(1) \
+                                    else torch.randint(keypoints.size(1), (n,), generator=generator, device=keypoints.device)
             keypoints = keypoints[:, idx]
             scores = scores[:, idx]
 

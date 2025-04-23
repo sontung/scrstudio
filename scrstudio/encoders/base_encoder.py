@@ -219,7 +219,8 @@ class Encoder(nn.Module):
             target_px = target_px[mask]
 
         if n > 0:
-            idx = torch.randperm(features.size(0),generator=generator,device=features.device)[:n]
+            idx = torch.randperm(features.size(0), generator=generator, device=features.device)[:n] if n <= features.size(0) \
+                                        else torch.randint(features.size(0), (n,), generator=generator, device=features.device)
             features = features[idx]
             target_px = target_px[idx]
 
