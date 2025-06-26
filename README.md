@@ -116,12 +116,6 @@ scr-retrieval-feat --data data/aachen/test
 scr-eval --load-config outputs/aachen/scrfacto/<timestamp>/config.yml --split test
 ```
 
-# Release Plan
-We are actively preparing SCRStudio for public release. Below is the tentative schedule:  
-
-- [x] March 2025: Initial release of SCRStudio.
-- [ ] April 2025: SCRStudio Viewer.
-
 
 # Publications
 

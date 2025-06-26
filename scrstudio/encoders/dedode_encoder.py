@@ -21,8 +21,7 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 from kornia.feature.dedode.dedode_models import get_descriptor, get_detector
-from kornia.feature.dedode.utils import sample_keypoints
-from kornia.geometry.conversions import denormalize_pixel_coordinates
+from kornia.feature.dedode.utils import dedode_denormalize_pixel_coordinates, sample_keypoints
 
 from scrstudio.encoders.base_encoder import Encoder, EncoderConfig, PreprocessConfig
 
@@ -115,7 +114,7 @@ class DedodeEncoder(Encoder):
 
 
         return {
-            "keypoints": denormalize_pixel_coordinates(keypoints, H, W)[0],
+            "keypoints": dedode_denormalize_pixel_coordinates(keypoints, H, W)[0],
             "keypoint_scores": scores[0],
             "descriptors": descriptions[0]
         }
