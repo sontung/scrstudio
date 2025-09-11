@@ -100,8 +100,8 @@ class ComputeKNNPose:
             config.data=self.data
         assert config.data is not None, "Data path must be provided."
 
-        print(config.data)
-        config.data = Path("/home/n11373598/hpc-home/work/glace_experiment/datasets/aachen11")
+        # print(config.data)
+        # config.data = Path("/home/n11373598/hpc-home/work/glace_experiment/datasets/aachen11")
 
         train_dataset=config.pipeline.datamanager.train_dataset
         train_dataset.data=config.data
