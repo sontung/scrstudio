@@ -1,9 +1,3 @@
-<p align="center">
-    <!-- <img alt="scrstudio" src="media/sdf_studio_4.png" width="300"> -->
-    <h1 align="center">SCRStudio <br> A Unified Framework for Scene Coordinate Regression</h1>
-        <h3 align="center"><a href="https://drive.google.com/file/d/1yZw_ZeZkq6MjIZhTXfmQSPbVg8oohdKs/view?usp=sharing">Paper</a> 
-    <img src="docs/module.png" center width="95%"/>
-</p>
 
 # About
 SCRStudio is a unified and modular framework for Scene Coordinate Regression (SCR)-based visual localization, built on top of the [nerfstudio](https://github.com/nerfstudio-project/nerfstudio) project.
@@ -17,32 +11,12 @@ This guide will help you get started with the default R-SCoRe SCR model trained 
 
 ## 1. Installation: Setup the Environment
 
-### Create Environment
-
-We recommend using **conda** to manage dependencies. Make sure to install [Conda](https://docs.conda.io/miniconda.html) before proceeding.
-
-
 ### Install Dependencies
-
-Install PyTorch with CUDA (tested with CUDA 12.1 and 12.4). PyTorch Geometric and cuML are also required for encoding preprocessing.
-
-For **CUDA 12.4**:
 ```bash
-conda create -n scrstudio python=3.10 pytorch=2.5.1 torchvision=0.20.1 pytorch-cuda=12.4 cuml=25.02 -c pytorch  -c rapidsai -c conda-forge -c nvidia
-conda activate scrstudio
-pip install --upgrade pip
-pip install torch_geometric
-pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
-```
-
-
-
-### Install SCRStudio
-
-```bash
-git clone --recursive https://github.com/cvg/scrstudio.git
-cd scrstudio
-pip install --upgrade pip setuptools
+git submodule update --init --recursive
+pixi install
+pixi shell # activate the environment
+pip install torch_geometric pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
 pip install -e .
 ```
 

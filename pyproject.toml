@@ -13,8 +13,6 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
-    "torch<2.6",
-    "torchvision",
     "tyro",
     "jaxtyping",
     "PyYAML",
@@ -35,7 +33,6 @@ dependencies = [
     "scikit-image",
     "poselib",
     "torch_geometric",
-    "hloc@git+https://github.com/cvg/Hierarchical-Localization",
 ]
 [project.optional-dependencies]
 dev = [
