@@ -115,7 +115,7 @@ class ExperimentConfig(InstantiateConfig):
         # check the experiment and method names
         assert self.method_name is not None, "Please set method name in config or via the cli"
         self.set_experiment_name()
-        return Path(f"{self.output_dir}/{self.experiment_name}/{self.method_name}/{self.timestamp}")
+        return Path(f"{self.output_dir}/{self.experiment_name}/{self.method_name}/fixed")
 
     def get_checkpoint_dir(self) -> Path:
         """Retrieve the checkpoint directory"""
