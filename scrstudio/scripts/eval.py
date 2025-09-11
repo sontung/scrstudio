@@ -199,9 +199,9 @@ class ComputeKNNPose:
                 metrics[key].append(result[key])
 
         pool.close()
-        frame_names = [frame_name for frame_name, _ in pool_results]
-        if self.base_name:
-            frame_names = [os.path.basename(frame_name).split("/")[-1] for frame_name, _ in pool_results]
+        frame_names = [frame_name.split("/")[-1] for frame_name, _ in pool_results]
+        # if self.base_name:
+        #     frame_names = [os.path.basename(frame_name).split("/")[-1] for frame_name, _ in pool_results]
         poses_df=pd.DataFrame(np.concatenate([np.stack(poses[k]) for k in ("pose_q", "pose_t")], axis=1), columns=['q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
         poses_df["frame_name"] = frame_names
         poses_df.to_csv(pose_file, index=False, sep=' ', header=False, columns=['frame_name', 'q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
