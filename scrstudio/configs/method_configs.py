@@ -168,7 +168,7 @@ method_configs["scrfacto"]=TrainerConfig(
             max_num_iterations=100000,
         )
     ),
-    machine=MachineConfig(num_devices=4),
+    machine=MachineConfig(num_devices=1),
     optimizers={
         "head": {
             "optimizer": AdamWOptimizerConfig(lr=0.0005),
