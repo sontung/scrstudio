@@ -15,6 +15,8 @@
 from __future__ import annotations
 
 import logging
+import time
+
 import math
 import os
 import pickle
@@ -154,9 +156,10 @@ class ComputeKNNPose:
         pool_results = []
         ransac_opt = {'max_reproj_error': self.threshold ,'max_iterations' : self.max_iter}
 
+        start = time.time()
         # Testing loop.
         with torch.no_grad():
-            for batch in tqdm(testset_loader):
+            for batch in tqdm(testset_loader, desc="Evaluating"):
                 image,  idx = batch['image'].to(device, non_blocking=True), batch['idx']
                 neighbor_indices=knn.kneighbors(query_feats[idx[0]])
                 global_feat=value_feats[neighbor_indices] 
@@ -197,6 +200,9 @@ class ComputeKNNPose:
                 poses[key].append(result[key])
             for key in ('t_err', 'r_err', 'num_inliers'):
                 metrics[key].append(result[key])
+
+        end = time.time()
+        _logger.info(f"Time: {end - start:.1f}s for {len(testset)} images")
 
         pool.close()
         frame_names = [frame_name.split("/")[-1] for frame_name, _ in pool_results]

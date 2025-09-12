@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pickle
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
@@ -107,6 +108,7 @@ class ComputeNetVLAD(PrintableConfig):
             dataset, num_workers=self.num_workers, shuffle=False, pin_memory=True
         )
         feats=[]
+        start = time.time()
         with torch.no_grad():
             for idx, data in enumerate(tqdm(loader)):
                 pred = model({"image": data["image"].to(device, non_blocking=True)})
@@ -126,7 +128,8 @@ class ComputeNetVLAD(PrintableConfig):
             if (dt == np.float32) and (dt != np.float16):
                 feats = feats.astype(np.float16)
         np.save(root / "netvlad_feats.npy", feats)
-
+        end = time.time()
+        print(f"Time: {end - start:.1f}s for {len(dataset)} images")
 
 def main(
     comp: ComputeNetVLAD
