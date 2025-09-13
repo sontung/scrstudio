@@ -203,6 +203,7 @@ class ComputeKNNPose:
 
         end = time.time()
         _logger.info(f"Time: {end - start:.1f}s for {len(testset)} images")
+        print(f"Time: {end - start:.1f}s for {len(testset)} images")
 
         pool.close()
         frame_names = [frame_name.split("/")[-1] for frame_name, _ in pool_results]
