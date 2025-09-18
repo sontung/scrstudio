@@ -92,7 +92,7 @@ method_configs["scrfacto"]=TrainerConfig(
                 train_covis_thres=0.2,
                 neighbor_ratio=0.5,
             ),
-            sampler=BatchRandomSamplerConfig(batch_size=40960),
+            sampler=BatchRandomSamplerConfig(batch_size=320000),
             encoder=PCAEncoderConfig(
                 encoder=DedodeEncoderConfig(
                     detector="L",
@@ -116,7 +116,7 @@ method_configs["scrfacto"]=TrainerConfig(
         num_pose_workers=3,
         model=ScrfactoConfig(
             in_channels=384,
-            head_channels=768,
+            head_channels=1280,
             backbone=BlockListConfig(
                 blocks=[
                     (InputBlockConfig(
