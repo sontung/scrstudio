@@ -59,6 +59,7 @@ class Node2Vec(Model):
         super().populate_modules()
         data = self.kwargs["data"]
         graph = scipy.sparse.load_npz(data/ "train"/self.config.graph).tocoo()
+        print(f"Reading graph from {data/ 'train'/self.config.graph}, shape: {graph.shape}, nnz: {graph.nnz}")
         graph.data[graph.data < self.config.edge_threshold] = 0
         graph.eliminate_zeros()
         self.graph = graph

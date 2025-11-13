@@ -78,6 +78,7 @@ class ComputeOverlap(PrintableConfig):
         pose_covis_sym=np.nan_to_num(pose_covis_sym)
         coo_covis=scipy.sparse.coo_array(pose_covis_sym)
         scipy.sparse.save_npz(self.data/'pose_overlap.npz',coo_covis)
+        print("Saved pose overlap graph to ",self.data/'pose_overlap.npz')
 
 
 
