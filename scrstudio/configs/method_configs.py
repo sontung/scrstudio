@@ -85,14 +85,14 @@ method_configs["scrfacto"]=TrainerConfig(
     gradient_accumulation_steps=2,
     pipeline=VanillaPipelineConfig(
         datamanager=GLBufferDataManagerConfig(
-            training_buffer_size=32000000,
+            training_buffer_size=128000000,
             samples_per_image=5000,
             global_feat=GlobalFeatSamplerConfig(
                 train_covis_graph='pose_overlap.npz',
                 train_covis_thres=0.2,
                 neighbor_ratio=0.5,
             ),
-            sampler=BatchRandomSamplerConfig(batch_size=40960),
+            sampler=BatchRandomSamplerConfig(batch_size=320000),
             encoder=PCAEncoderConfig(
                 encoder=DedodeEncoderConfig(
                     detector="L",
