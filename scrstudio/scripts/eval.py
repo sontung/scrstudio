@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import time
+from datetime import datetime
 
 import math
 import os
@@ -215,7 +216,13 @@ class ComputeKNNPose:
         metrics=pd.DataFrame(metrics)
         metrics["frame_name"] = frame_names
         metrics.to_csv(metric_file, index=False, sep=' ', header=False, columns=['frame_name', 't_err', 'r_err', 'num_inliers'])
+        now = datetime.now()
+        os.makedirs("results", exist_ok=True)
 
+        # Format it as a string
+        date_time_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+        pose_log_file = f"results/res-aachen-{date_time_str}.txt"
+        poses_df.to_csv(pose_log_file, index=False, sep=' ', header=False, columns=['frame_name', 'q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
 
 
         _logger.info("===================================================")
