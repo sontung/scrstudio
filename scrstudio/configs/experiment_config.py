@@ -123,9 +123,10 @@ class ExperimentConfig(InstantiateConfig):
 
     def print_to_terminal(self) -> None:
         """Helper to pretty print config to terminal"""
-        CONSOLE.rule("Config")
-        CONSOLE.print(self)
-        CONSOLE.rule("")
+        # CONSOLE.rule("Config")
+        # CONSOLE.print(self)
+        # CONSOLE.rule("")
+        pass
 
     def save_config(self) -> None:
         """Save config to base directory"""
