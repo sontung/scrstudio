@@ -397,6 +397,8 @@ class Trainer:
                 _, loss_dict, metrics_dict = self.pipeline.get_train_loss_dict(step=step)
                 loss = functools.reduce(torch.add, loss_dict.values())
                 loss /= self.gradient_accumulation_steps
+                if torch.isnan(loss):
+                    raise ValueError("NaN detected inside the model — check intermediate tensors.")
             self.grad_scaler.scale(loss).backward()  # type: ignore
         self.optimizers.optimizer_scaler_step_all(self.grad_scaler)
 

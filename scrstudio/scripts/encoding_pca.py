@@ -77,7 +77,7 @@ class ComputePCA(PrintableConfig):
         print(f"GPU memory reserved: {torch.cuda.memory_reserved(device)/1e9:.2f} GB")
         print(f"all_feats memory allocated: {all_feats.numel()*4/1e9:.2f} GB with {samples} samples")
 
-        for i,batch in enumerate(tqdm(dl)):
+        for i,batch in enumerate(tqdm(dl, desc="get local descriptors")):
             image = batch['image'].to(device, non_blocking=True)
             with torch.inference_mode():
                 with autocast("cuda",enabled=True):
@@ -91,6 +91,11 @@ class ComputePCA(PrintableConfig):
         proc_dir=self.data / "proc"
         proc_dir.mkdir(parents=True, exist_ok=True)
         all_feats=self.get_features()
+        print(all_feats.size(0), "nb features")
+        N = min(5000000, all_feats.shape[0])
+        idx = torch.randperm(all_feats.size(0))[:N]
+        all_feats = all_feats[idx]
+
         torch.cuda.empty_cache()
         print(f"GPU memory allocated: {torch.cuda.memory_allocated(device)/1e9:.2f} GB")
         print(f"GPU memory reserved: {torch.cuda.memory_reserved(device)/1e9:.2f} GB")

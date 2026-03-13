@@ -48,14 +48,37 @@ def pose_estimate(keypoints, scene_coords, camera,ransac_opt ,  gt_pose ):
     R_pred=pose.R.T
     pred_pose[:3,:3]=R_pred
     pred_pose[:3,3]=-R_pred@pose.t
-
     return {
         "num_inliers": info['num_inliers'],
         "t_err": np.linalg.norm(gt_pose[:3,3] - pred_pose[:3,3]),
         "r_err": np.linalg.norm(cv2.Rodrigues(gt_pose[:3,:3]@pose.R)[0]) * 180 / math.pi,
-        "pose_q": pose.q,
-        "pose_t": pose.t,
+        "pose_q": pose.q.tolist(),
+        "pose_t": pose.t.tolist(),
     }
+
+
+def attach_nan_hooks(model):
+    def check_nan_hook(module, inp, out):
+        name = module.__class__.__name__
+        if isinstance(out, torch.Tensor):
+            if torch.isnan(out).any():
+                print(f"❌ NaN after layer: {name}")
+                print("   Input:", None if inp is None else "OK")
+                print("   Out stats: mean=", out.nanmean().item(), "max=", out.max().item())
+                raise RuntimeError(f"NaN inside {name}")
+        elif isinstance(out, (list, tuple)):
+            for o in out:
+                if torch.is_tensor(o) and torch.isnan(o).any():
+                    print(f"❌ NaN after layer: {name} (tuple/list output)")
+                    raise RuntimeError(f"NaN inside {name}")
+
+    for module in model.modules():
+        # Avoid registering on the entire model itself
+        if len(list(module.children())) > 0:
+            continue
+        module.register_forward_hook(check_nan_hook)
+
+    print("NaN hooks attached!")
 
 
 acc_thresh = {
@@ -73,7 +96,7 @@ class ComputeKNNPose:
     split: str = "test"
     retrieval: str = "netvlad_feats"
     n_neighbors: int = 10
-    num_workers: int = 8
+    num_workers: int = 1
     output_path: Optional[Path] = None
     threshold: float = 10
     max_iter: int = 10000
@@ -109,6 +132,7 @@ class ComputeKNNPose:
         train_dataset=config.pipeline.datamanager.train_dataset
         train_dataset.data=config.data
         trainset=train_dataset.setup()
+
         model=config.pipeline.model.setup(metadata=trainset.metadata)
         model.load_state_dict(state_dict)
 
@@ -127,11 +151,14 @@ class ComputeKNNPose:
             pq, codes = pickle.load(f)
         knn=PQKNN(pq,codes,n_neighbors=self.n_neighbors)
         testset=eval_dataset.setup(preprocess=encoder.preprocess)
+        
 
         encoder = encoder.to(device)
         encoder.eval()
         model = model.to(device)
         model.eval()
+
+        attach_nan_hooks(model)
 
         if self.output_path:
             output_dir = self.output_path
@@ -142,7 +169,15 @@ class ComputeKNNPose:
         else:
             raise ValueError("Output path not specified.")
         output_dir.mkdir(parents=True, exist_ok=True)
-        testset_loader = DataLoader(testset, shuffle=False, num_workers=self.num_workers)
+        testset_loader = DataLoader(testset, shuffle=False, num_workers=self.num_workers,    
+                                     pin_memory=False, persistent_workers=False)
+
+        # import sys
+        # # trainset[3479]
+        # # print(len(trainset))
+        # for _ in tqdm(testset_loader):
+        #     continue
+        # sys.exit()
 
         log_file = output_dir / f'testlog{self.suffix}.txt'
         _logger = logging.getLogger(__name__)
@@ -162,12 +197,13 @@ class ComputeKNNPose:
         with torch.no_grad():
             for batch in tqdm(testset_loader, desc="Evaluating"):
                 image,  idx = batch['image'].to(device, non_blocking=True), batch['idx']
+                if idx > 10:
+                    break
                 neighbor_indices=knn.kneighbors(query_feats[idx[0]])
                 global_feat=value_feats[neighbor_indices] 
                 assert global_feat.shape[0] == self.n_neighbors
                 assert global_feat.ndim == 2
-
-                with autocast("cuda",enabled=True):
+                with autocast("cuda",enabled=False):
                     encoder_output= encoder.keypoint_features({"image": image}, n=0)
                     keypoints = encoder_output["keypoints"]
                     descriptors = encoder_output["descriptors"]
@@ -176,6 +212,12 @@ class ComputeKNNPose:
                     gl_feat[:,:,:C_global]=global_feat.unsqueeze(1).expand(-1,N,-1)
                     gl_feat[:,:,C_global:]=descriptors.unsqueeze(0).expand(self.n_neighbors,-1,-1)
                     scene_coords = model({"features": gl_feat.reshape(self.n_neighbors*N,-1)})['sc']
+                    print(torch.any(torch.isnan(descriptors)).item(), 
+                          torch.any(torch.isnan(global_feat)).item(),
+                          torch.any(torch.isnan(scene_coords)).item(),
+                          )
+                    print(descriptors.dtype, global_feat.dtype)
+
                     keypoints = keypoints.float().cpu()
 
                 scene_coords = scene_coords.float().cpu().numpy().reshape(self.n_neighbors, N, 3)
@@ -189,9 +231,14 @@ class ComputeKNNPose:
                 }
 
                 knn_results = []
-                for neighbor_idx in range(self.n_neighbors):
-                    knn_results.append(pool.apply_async(pose_estimate, args=(keypoints_np, scene_coords[neighbor_idx], camera, ransac_opt, gt_pose)))
+                # pose_estimate(keypoints_np, scene_coords[0], camera, ransac_opt, gt_pose)
+                knn_results.append(pool.apply_async(pose_estimate, 
+                                                    args=(keypoints_np, scene_coords[0], camera, ransac_opt, gt_pose)))
 
+                # for neighbor_idx in range(self.n_neighbors):
+                #     pose_estimate(keypoints_np, scene_coords[neighbor_idx], camera, ransac_opt, gt_pose)
+                # for neighbor_idx in range(self.n_neighbors):
+                #     knn_results.append(pool.apply_async(pose_estimate, args=(keypoints_np, scene_coords[neighbor_idx], camera, ransac_opt, gt_pose)))
                 pool_results.append((frame_name, knn_results))
 
         for frame_name,knn_results in pool_results:
@@ -207,10 +254,15 @@ class ComputeKNNPose:
         print(f"Time: {end - start:.1f}s for {len(testset)} images")
 
         pool.close()
+        print(len(metrics["t_err"]))
+        print(metrics)
         frame_names = [frame_name.split("/")[-1] for frame_name, _ in pool_results]
         # if self.base_name:
         #     frame_names = [os.path.basename(frame_name).split("/")[-1] for frame_name, _ in pool_results]
-        poses_df=pd.DataFrame(np.concatenate([np.stack(poses[k]) for k in ("pose_q", "pose_t")], axis=1), columns=['q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
+        poses_df=pd.DataFrame(
+            np.concatenate(
+                [np.stack(poses[k]) for k in ("pose_q", "pose_t")], axis=1), 
+                columns=['q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
         poses_df["frame_name"] = frame_names
         poses_df.to_csv(pose_file, index=False, sep=' ', header=False, columns=['frame_name', 'q_w', 'q_x', 'q_y', 'q_z', 't_x', 't_y', 't_z'])
         metrics=pd.DataFrame(metrics)

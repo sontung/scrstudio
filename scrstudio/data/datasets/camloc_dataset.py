@@ -59,6 +59,7 @@ class CamLocDataset(Dataset):
         root = self.config.data / self.config.split
         if not root.exists():
             self.rgb_files = []
+            print(f"Dataset path {root} does not exist")
             return
         self.rgb_reader =self.config.rgb.setup(root=root)
         self.rgb_files = self.rgb_reader.file_list
@@ -91,6 +92,7 @@ class CamLocDataset(Dataset):
         if self.config.num_decoder_clusters>1:
             kmeans=KMeans(n_clusters=self.config.num_decoder_clusters,random_state=0).fit(self.pose_values[:,:3,3].astype(np.float32))
             cluster_centers=kmeans.cluster_centers_
+            np.save(root / "scene_centers", cluster_centers)
             self.metadata["cluster_centers"] = torch.from_numpy(cluster_centers).float()
         else:
             self.metadata["cluster_centers"] = torch.from_numpy(self.pose_values[:,:3,3].mean(0,keepdims=True)).float()
@@ -100,7 +102,6 @@ class CamLocDataset(Dataset):
         image = self.rgb_reader[idx]
         if image is not None and len(image.shape) < 3:
             image = color.gray2rgb(image)
-
         return image
 
     @lru_cache(maxsize=1)
@@ -114,20 +115,11 @@ class CamLocDataset(Dataset):
 
     @lru_cache(maxsize=1)
     def _load_calib(self, idx):
-        k = self.calibration_values[idx]
-        if k.size == 1:
-            focal_length = torch.tensor([k, k], dtype=torch.float32)
-            center_point = None
-        elif k.shape == (2, ):
-            focal_length = torch.tensor(k, dtype=torch.float32)
-            center_point = None
-        elif k.shape == (3, 3):
-            focal_length = torch.tensor(k[[0, 1], [0, 1]], dtype=torch.float32)
-            center_point = torch.tensor(k[[0, 1], 2], dtype=torch.float32)
-        else: 
-            raise Exception("Calibration file must contain either a 3x3 camera \
-                intrinsics matrix or a single float giving the focal length \
-                of the camera.")
+        fx, fy = [362.39892808341875, 365.24253793162524]
+        cx, cy = [482.2320501297286, 289.9148760046266]
+        focal_length = torch.tensor([fx, fy], dtype=torch.float32)
+        center_point = torch.tensor([cx, cy], dtype=torch.float32)
+        center_point = None
         return focal_length, center_point
 
     def __getitem__(self, idx):
@@ -136,7 +128,7 @@ class CamLocDataset(Dataset):
             "calib": self._load_calib(idx),
             "pose": self._load_pose(idx),
         }
-       
+
         if self.depth_reader:
             data['depth'] = self._load_depth(idx)
 

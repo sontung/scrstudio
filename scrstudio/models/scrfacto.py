@@ -110,6 +110,5 @@ class Scrfacto(Model):
         loss_dict = {
             "loss": metrics_dict["loss"],
         }
-        
         return loss_dict
 
