@@ -106,7 +106,7 @@ method_configs["scrfacto"]=TrainerConfig(
                 augment=ImageAugmentConfig(),
                 split='train',
                 feat_name='pose_n2c.pt',
-                num_decoder_clusters=10,
+                num_decoder_clusters=50,
             ),
             eval_dataset=CamLocDatasetConfig(
                 split='val',
