@@ -67,7 +67,7 @@ method_configs["node2vec"] = TrainerConfig(
             edge_threshold=0.2,
         ),
         datamanager=Node2VecDataManagerConfig(
-            batch_size=32,
+            batch_size=256,
             num_workers=2,
         ),
     ),
@@ -85,15 +85,14 @@ method_configs["scrfacto"]=TrainerConfig(
     gradient_accumulation_steps=2,
     pipeline=VanillaPipelineConfig(
         datamanager=GLBufferDataManagerConfig(
-            training_buffer_size=32000000,
+            training_buffer_size=128000000,
             samples_per_image=5000,
-            # global_feat=GlobalFeatSamplerConfig(
-            #     train_covis_graph='pose_overlap.npz',
-            #     train_covis_thres=0.2,
-            #     neighbor_ratio=0.5,
-            # ),
-            global_feat=None,
-            sampler=BatchRandomSamplerConfig(batch_size=40960),
+            global_feat=GlobalFeatSamplerConfig(
+                train_covis_graph='pose_overlap.npz',
+                train_covis_thres=0.2,
+                neighbor_ratio=0.5,
+            ),
+            sampler=BatchRandomSamplerConfig(batch_size=320000),
             encoder=PCAEncoderConfig(
                 encoder=DedodeEncoderConfig(
                     detector="L",
@@ -116,8 +115,7 @@ method_configs["scrfacto"]=TrainerConfig(
         ),
         num_pose_workers=3,
         model=ScrfactoConfig(
-            # in_channels=384,
-            in_channels=128,
+            in_channels=384,
             head_channels=1280,
             backbone=BlockListConfig(
                 blocks=[
@@ -162,7 +160,7 @@ method_configs["scrfacto"]=TrainerConfig(
                     input_name ="sc0",
                     output_name="0",
                     db_std=3,
-                    depth_target=5,
+                    depth_target=10,
                 ),
 
             ],
@@ -170,7 +168,7 @@ method_configs["scrfacto"]=TrainerConfig(
             max_num_iterations=100000,
         )
     ),
-    machine=MachineConfig(num_devices=1),
+    machine=MachineConfig(num_devices=4),
     optimizers={
         "head": {
             "optimizer": AdamWOptimizerConfig(lr=0.0005),
