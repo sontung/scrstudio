@@ -78,6 +78,7 @@ class CamLocDataset(Dataset):
         else:
             self.pose_values = np.load(root / 'poses.npy')
 
+        print(f"Trying to load from {root / self.config.feat_name}")
         if not (root / self.config.feat_name).exists():
             self.global_feats=np.zeros((len(self.rgb_files),1))
             print(f"Global feature {self.config.feat_name} not found\nUsing dummy zeros {self.global_feats.shape}")
